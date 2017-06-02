@@ -17,11 +17,17 @@ public class FillUpTankData {
     @SneakyThrows
     public static void main(String[] args) {
         FillUpTankData fillUp = new FillUpTankData();
+        DB db = new DB();
         List<Tank> tankDataList = fillUp.apiProcessor.getTankData();
-        Path file = Paths.get("tank_data.csv");
-        List<String> toFile = new ArrayList<>();
-        toFile.add(Tank.toCSVDefault());
-        tankDataList.forEach(p -> toFile.add(p.toCSV()));
-        Files.write(file, toFile);
+        for (Tank tank :
+                tankDataList) {
+            db.putTankDataToDB(tank);
+        }
+        db.close();
+//        Path file = Paths.get("tank_data.csv");
+//        List<String> toFile = new ArrayList<>();
+//        toFile.add(Tank.toCSVDefault());
+//        tankDataList.forEach(p -> toFile.add(p.toCSV()));
+//        Files.write(file, toFile);
     }
 }

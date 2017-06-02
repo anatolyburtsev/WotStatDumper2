@@ -29,13 +29,12 @@ public class ValidIds {
         BlockingQueue<Integer> queue = new ArrayBlockingQueue<>(50);
         BlockingQueue<String> availableIds = new ArrayBlockingQueue<>(10000);
         QueueToFile queueToFile = new QueueToFile(availableIds, file);
-        int startId =  20000000;
+        int startId =  10000000;
         int finishId = 100000000;
         int threadsCount = 10;
         int step = 100;
         IdsBanchIterator iterator = new IdsBanchIterator(startId, finishId, step);
         Producer producer = new Producer(iterator, queue);
-        Consumer consumer = new Consumer<>(queue, availableIds, apiProcessor::getValidAccountIdsPutToQueue);
         Finalizer finalizer = new Finalizer(queueToFile, iterator);
 
         Thread tp = new Thread(producer);
@@ -43,9 +42,10 @@ public class ValidIds {
 
         ExecutorService executor = Executors.newFixedThreadPool(threadsCount);
         for (int i = 0; i < threadsCount; i++) {
+            Consumer consumer = new Consumer<>(queue, availableIds, apiProcessor::getValidAccountIdsPutToQueue);
             executor.execute(consumer);
         }
-        timer.schedule(new Informer(queue, availableIds, iterator), 1000, 1000);
+        timer.schedule(new Informer(queue, availableIds, iterator), 1000,10000);
         timer.schedule(new SaverLinesToFile(availableIds, queueToFile), 5000, 5000);
         timer.schedule(finalizer, 10_000, 10_000);
         finalizer.add(tp);

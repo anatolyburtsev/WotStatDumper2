@@ -2,6 +2,7 @@ package ru.onotole.dumper.utils;
 
 import com.google.gson.*;
 import lombok.SneakyThrows;
+import lombok.extern.slf4j.Slf4j;
 import ru.onotole.dumper.model.Config;
 import ru.onotole.dumper.model.Tank;
 import ru.onotole.dumper.model.TankPerUserStat;
@@ -19,6 +20,7 @@ import java.util.concurrent.BlockingQueue;
 /**
  * Created by onotole on 25/05/2017.
  */
+@Slf4j
 public class APIProcessor {
     private Gson gson = new Gson();
     private JsonParser jsonParser = new JsonParser();
@@ -98,9 +100,19 @@ public class APIProcessor {
         Files.write(file, list);
     }
 
-    private static Reader getByUrl(String URL) throws IOException {
-        java.net.URL url = new URL(URL);
-        InputStream in = url.openStream();
-        return new BufferedReader(new InputStreamReader(in, "UTF-8"));
+    private static Reader getByUrl(String URL) throws InterruptedException {
+        Reader reader = null;
+        while (reader == null) {
+            try {
+                java.net.URL url = new URL(URL);
+                InputStream in = url.openStream();
+                reader = new BufferedReader(new InputStreamReader(in, "UTF-8"));
+            } catch (IOException e) {
+                log.info(Thread.currentThread().getName() + " : " + e.getMessage());
+                Thread.sleep(1000);
+            }
+        }
+
+        return reader;
     }
 }

@@ -66,10 +66,11 @@ public class DB {
 
     public void putTankDataToDB(Tank tank) {
         String req = String.format("INSERT INTO %s " +
-                        "(NAME, TIER, NATION, TYPE, MANEUVERABILITY, PROTECTION, SHOT_EFFICIENCY, FIREPOWER) VALUES (" +
-                        "\"%s\", \"%d\", \"%s\", \"%s\", \"%d\", \"%d\", \"%d\", \"%d\"); ",
+                        "(NAME, TANK_ID, TIER, NATION, TYPE, MANEUVERABILITY, PROTECTION, SHOT_EFFICIENCY, FIREPOWER) VALUES (" +
+                        "\"%s\", \"%d\", \"%d\", \"%s\", \"%s\", \"%d\", \"%d\", \"%d\", \"%d\"); ",
                 TANK_DATA_TABLE,
                 tank.getName(),
+                tank.getTank_id(),
                 tank.getTier(),
                 tank.getNation(),
                 tank.getType(),
@@ -94,6 +95,7 @@ public class DB {
     private void createTankDataDb() {
         String req = String.format("CREATE TABLE IF NOT EXISTS %s (" +
                 "NAME TEXT," +
+                "TANK_ID INTEGER," +
                 "TIER INTEGER," +
                 "NATION TEXT," +
                 "TYPE TEXT," +
@@ -103,11 +105,11 @@ public class DB {
                 "FIREPOWER INTEGER);",
                 TANK_DATA_TABLE
         );
-        System.out.println("HERE");
         doUpdateRequest(req, TANK_DATA_TABLE);
     }
 
     private void doUpdateRequest(String request, String dbName) {
+        dbName = "tank_sample_big.db";
         if (connection == null) connect(dbName);
         int  result = 0;
         try(Statement updateStmt = connection.createStatement()) {

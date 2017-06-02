@@ -23,13 +23,14 @@ public class TankUserStatDumper {
     private final BlockingQueue<TankPerUserStat> statsDataQueue = new ArrayBlockingQueue<>(1000);
     private final ReadFromFileIterator iterator = new ReadFromFileIterator(fileWithIds);
     private final Timer timer = new Timer();
-    private final int threadsCount = 10;
+    private final int threadsCount = 4;
 
     private final Producer producer = new Producer(iterator, idsQueue);
-    private final Consumer consumer = new Consumer<>(idsQueue, statsDataQueue, apiProcessor::getTankUserStatById);
+//    private Consumer consumer;// = new Consumer<>(idsQueue, statsDataQueue, apiProcessor::getTankUserStatById);
     private final Informer informer = new Informer(idsQueue, statsDataQueue, iterator);
     private final Thread tp = new Thread(producer);
     private final Executor executor = Executors.newFixedThreadPool(threadsCount);
+//    private final Finalizer finalizer = new Finalizer(que, iterator);
 
     @SneakyThrows
     public static void main(String[] args) {
@@ -37,7 +38,8 @@ public class TankUserStatDumper {
         tankUserStatDumper.tp.start();
         Thread.sleep(1000);
         for (int i = 0; i < tankUserStatDumper.threadsCount; i++) {
-            tankUserStatDumper.executor.execute(tankUserStatDumper.consumer);
+            tankUserStatDumper.executor.execute(new Consumer<>(tankUserStatDumper.idsQueue,
+                    tankUserStatDumper.statsDataQueue, tankUserStatDumper.apiProcessor::getTankUserStatById));
         }
 
         tankUserStatDumper.timer.schedule(tankUserStatDumper.informer, 1000, 1000);
