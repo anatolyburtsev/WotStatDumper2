@@ -19,7 +19,7 @@ import java.util.concurrent.BlockingQueue;
 public class SaverLinesToFile extends TimerTask {
     private final BlockingQueue<String> queue;
     private final QueueToFile queueToFile;
-    private static final int BUNCH_SIZE = 5;
+    private static final int BUNCH_SIZE = 1000;
 
     @Override
     @SneakyThrows

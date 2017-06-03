@@ -9,6 +9,7 @@ import ru.onotole.dumper.utils.QueueToFile;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.nio.file.StandardOpenOption;
 import java.util.ArrayList;
 import java.util.Timer;
 import java.util.concurrent.*;
@@ -22,16 +23,16 @@ public class ValidIds {
     public static void main(String[] args) {
         String filename = "accIds20M100M.txt";
         Path file = Paths.get(filename);
-        Files.write(file, new ArrayList<String>());
+        Files.write(file, new ArrayList<String>(), StandardOpenOption.APPEND);
 
         APIProcessor apiProcessor = new APIProcessor();
         Timer timer = new Timer();
         BlockingQueue<Integer> queue = new ArrayBlockingQueue<>(50);
         BlockingQueue<String> availableIds = new ArrayBlockingQueue<>(10000);
         QueueToFile queueToFile = new QueueToFile(availableIds, file);
-        int startId =  10000000;
+        int startId =  53009100;
         int finishId = 100000000;
-        int threadsCount = 10;
+        int threadsCount = 3;
         int step = 100;
         IdsBanchIterator iterator = new IdsBanchIterator(startId, finishId, step);
         Producer producer = new Producer(iterator, queue);
@@ -45,7 +46,7 @@ public class ValidIds {
             Consumer consumer = new Consumer<>(queue, availableIds, apiProcessor::getValidAccountIdsPutToQueue);
             executor.execute(consumer);
         }
-        timer.schedule(new Informer(queue, availableIds, iterator), 1000,10000);
+        timer.schedule(new Informer(queue, availableIds, iterator), 1000,10_000);
         timer.schedule(new SaverLinesToFile(availableIds, queueToFile), 5000, 5000);
         timer.schedule(finalizer, 10_000, 10_000);
         finalizer.add(tp);

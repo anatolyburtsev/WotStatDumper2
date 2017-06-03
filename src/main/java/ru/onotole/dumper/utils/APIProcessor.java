@@ -86,6 +86,10 @@ public class APIProcessor {
     private List<String> extractUserIdsListFromJson(Reader response) {
         List<String> result = new ArrayList<>();
         JsonObject wholeObject = jsonParser.parse(response).getAsJsonObject();
+        if (wholeObject.get("data").isJsonNull()) {
+            log.error("bad json: " + wholeObject);
+            return result;
+        }
         JsonObject usersArray = wholeObject.get("data").getAsJsonObject();
         for (Map.Entry<String, JsonElement> entry : usersArray.entrySet()) {
             if (! entry.getValue().isJsonNull()) {
