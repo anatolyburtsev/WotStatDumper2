@@ -39,7 +39,7 @@ public class Informer extends TimerTask {
         }
         if (lastId > 0) {
             log.info(String.format(
-                    "Finished: %s\tSpeed: %4d\tcurrentId:%d\tids queue size: %d, work queue size: %d",
+                    "Process: %s\tSpeed: %4d\tcurrentId:%d\tids queue size: %d, work queue size: %d",
                     percentFormatter.format(processStatus.getProcess()),
                     currentId - lastId,
                     currentId,

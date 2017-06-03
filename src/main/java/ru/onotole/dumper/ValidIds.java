@@ -1,6 +1,7 @@
 package ru.onotole.dumper;
 
 import lombok.SneakyThrows;
+import lombok.extern.slf4j.Slf4j;
 import ru.onotole.dumper.parallel.*;
 import ru.onotole.dumper.parallel.iterators.IdsBanchIterator;
 import ru.onotole.dumper.utils.APIProcessor;
@@ -14,9 +15,12 @@ import java.util.ArrayList;
 import java.util.Timer;
 import java.util.concurrent.*;
 
+import static ru.onotole.dumper.parallel.ExceptionLogging.withExceptionLogging;
+
 /**
  * Created by onotole on 26/05/2017.
  */
+@Slf4j
 public class ValidIds {
 
     @SneakyThrows
@@ -27,10 +31,10 @@ public class ValidIds {
 
         APIProcessor apiProcessor = new APIProcessor();
         Timer timer = new Timer();
-        BlockingQueue<Integer> queue = new ArrayBlockingQueue<>(50);
-        BlockingQueue<String> availableIds = new ArrayBlockingQueue<>(10000);
+        BlockingQueue<Integer> queue = new LinkedBlockingQueue<>(50);
+        BlockingQueue<String> availableIds = new LinkedBlockingQueue<>(5000);
         QueueToFile queueToFile = new QueueToFile(availableIds, file);
-        int startId =  53009100;
+        int startId =  54450326;
         int finishId = 100000000;
         int threadsCount = 3;
         int step = 100;
@@ -44,7 +48,7 @@ public class ValidIds {
         ExecutorService executor = Executors.newFixedThreadPool(threadsCount);
         for (int i = 0; i < threadsCount; i++) {
             Consumer consumer = new Consumer<>(queue, availableIds, apiProcessor::getValidAccountIdsPutToQueue);
-            executor.execute(consumer);
+            executor.execute(withExceptionLogging(consumer));
         }
         timer.schedule(new Informer(queue, availableIds, iterator), 1000,10_000);
         timer.schedule(new SaverLinesToFile(availableIds, queueToFile), 5000, 5000);
