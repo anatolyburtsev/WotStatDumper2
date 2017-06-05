@@ -13,6 +13,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.BlockingQueue;
@@ -32,8 +33,13 @@ public class APIProcessor {
         String url = String.format(Config.WOTB_TANKS_STATS_URL, id);
         Reader reader = APIProcessor.getByUrl(url);
         JsonObject jObj = jsonParser.parse(reader).getAsJsonObject();
+        if (jObj.get("data").isJsonNull()) {
+            log.error("Problem with json output: " + jObj.getAsString() + " by url: " + url);
+            return;
+        }
         JsonElement data = jObj.get("data").getAsJsonObject().get("" + id);
         if (data instanceof JsonNull) {
+            log.error("Problem2 with json output: " + jObj.getAsString() + " by url: " + url);
             return;
         }
         JsonArray jsonArray = data.getAsJsonArray();
@@ -112,8 +118,10 @@ public class APIProcessor {
                 InputStream in = url.openStream();
                 reader = new BufferedReader(new InputStreamReader(in, "UTF-8"));
             } catch (IOException e) {
-                log.info(Thread.currentThread().getName() + " : " + e.getMessage());
-                Thread.sleep(1000);
+                reader = null;
+                log.info("{} Network problem with URL : {}, trace: {}", Thread.currentThread().getName(),
+                        URL, e.toString());
+                Thread.sleep(10_000);
             }
         }
 

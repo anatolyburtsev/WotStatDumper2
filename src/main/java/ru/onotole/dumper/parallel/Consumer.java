@@ -20,17 +20,15 @@ public class Consumer<T> implements Runnable{
     private final BiConsumer<Integer, BlockingQueue<T>> consumer;
 
     @Override
+    @SneakyThrows
     public void run() {
-        Integer currentId;
-        try {
-            while (!Thread.currentThread().isInterrupted() && (currentId = queue.take()) != null) {
-                LocalDateTime dt = LocalDateTime.now();
-                consumer.accept(currentId, outputQueue);
-                if (currentId % 1000 == 0) log.info("Thread: "  + Thread.currentThread().getName() + " alive. spent "
-                        + Duration.between(dt, LocalDateTime.now()).toMillis() + " ms on work");
-            }
-        } catch (InterruptedException e) {
-            log.info("Stop thread: " + Thread.currentThread().getName());
+        Integer currentId = null;
+        while (!Thread.currentThread().isInterrupted() && (currentId = queue.take()) != null) {
+            LocalDateTime dt = LocalDateTime.now();
+            consumer.accept(currentId, outputQueue);
+            if (currentId % 1000 == 0) log.info("Thread: " + Thread.currentThread().getName() + " alive. spent "
+                    + Duration.between(dt, LocalDateTime.now()).toMillis() + " ms on work");
         }
+        throw new RuntimeException("I shouldn't be here! currentId: " + currentId);
     }
 }

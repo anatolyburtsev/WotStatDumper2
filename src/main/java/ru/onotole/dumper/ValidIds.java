@@ -34,9 +34,9 @@ public class ValidIds {
         BlockingQueue<Integer> queue = new LinkedBlockingQueue<>(50);
         BlockingQueue<String> availableIds = new LinkedBlockingQueue<>(5000);
         QueueToFile queueToFile = new QueueToFile(availableIds, file);
-        int startId =  54450326;
+        int startId =  77380700;
         int finishId = 100000000;
-        int threadsCount = 3;
+        int threadsCount = 5;
         int step = 100;
         IdsBanchIterator iterator = new IdsBanchIterator(startId, finishId, step);
         Producer producer = new Producer(iterator, queue);
@@ -56,6 +56,5 @@ public class ValidIds {
         finalizer.add(tp);
         finalizer.add(timer);
         finalizer.add(executor);
-
     }
 }

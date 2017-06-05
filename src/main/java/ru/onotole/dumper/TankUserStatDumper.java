@@ -15,15 +15,17 @@ import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.Executor;
 import java.util.concurrent.Executors;
 
+import static ru.onotole.dumper.parallel.ExceptionLogging.withExceptionLogging;
+
 public class TankUserStatDumper {
-    private final String filenameWithIds = "accIds10M20M.txt";
+    private final String filenameWithIds = "accIds.txt";
     private final Path fileWithIds = Paths.get(filenameWithIds);
     private final APIProcessor apiProcessor = new APIProcessor();
     private final BlockingQueue<Integer> idsQueue = new ArrayBlockingQueue<>(100);
     private final BlockingQueue<TankPerUserStat> statsDataQueue = new ArrayBlockingQueue<>(1000);
     private final ReadFromFileIterator iterator = new ReadFromFileIterator(fileWithIds);
     private final Timer timer = new Timer();
-    private final int threadsCount = 4;
+    private final int threadsCount = 8;
 
     private final Producer producer = new Producer(iterator, idsQueue);
 //    private Consumer consumer;// = new Consumer<>(idsQueue, statsDataQueue, apiProcessor::getTankUserStatById);
@@ -38,8 +40,9 @@ public class TankUserStatDumper {
         tankUserStatDumper.tp.start();
         Thread.sleep(1000);
         for (int i = 0; i < tankUserStatDumper.threadsCount; i++) {
-            tankUserStatDumper.executor.execute(new Consumer<>(tankUserStatDumper.idsQueue,
-                    tankUserStatDumper.statsDataQueue, tankUserStatDumper.apiProcessor::getTankUserStatById));
+            Consumer<TankPerUserStat> consumer = new Consumer<>(tankUserStatDumper.idsQueue,
+                    tankUserStatDumper.statsDataQueue, tankUserStatDumper.apiProcessor::getTankUserStatById);
+            tankUserStatDumper.executor.execute(withExceptionLogging(consumer));
         }
 
         tankUserStatDumper.timer.schedule(tankUserStatDumper.informer, 1000, 1000);
