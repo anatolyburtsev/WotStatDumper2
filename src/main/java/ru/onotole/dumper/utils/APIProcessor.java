@@ -33,15 +33,10 @@ public class APIProcessor {
         String url = String.format(Config.WOTB_TANKS_STATS_URL, id);
         Reader reader = APIProcessor.getByUrl(url);
         JsonObject jObj = jsonParser.parse(reader).getAsJsonObject();
-        if (jObj.get("data").isJsonNull()) {
-            log.error("Problem with json output: " + jObj.getAsString() + " by url: " + url);
-            return;
-        }
-        JsonElement data = jObj.get("data").getAsJsonObject().get("" + id);
-        if (data instanceof JsonNull) {
-            log.error("Problem2 with json output: " + jObj.getAsString() + " by url: " + url);
-            return;
-        }
+        JsonObject rawData = jObj.get("data").getAsJsonObject();
+        if (rawData == null) return;
+        JsonElement data = rawData.get("" + id);
+        if (data instanceof JsonNull) return;
         JsonArray jsonArray = data.getAsJsonArray();
         for (JsonElement element : jsonArray ) {
             TankPerUserStat user = gson.fromJson(element, TankPerUserStat.class);
